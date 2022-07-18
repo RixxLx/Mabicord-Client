@@ -10,7 +10,6 @@
   "license": "MIT",
   "dependencies": {
     "cap": "^0.2.1",
-    "node-fetch": "^2.6.7",
-    "request": "^2.88.2"
+    "node-fetch": "^2.6.7"
   }
 }

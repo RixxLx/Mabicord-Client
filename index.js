@@ -14,28 +14,10 @@ var buffer = Buffer.alloc(65535)
 var linkType = c.open(device, filter, bufSize, buffer)
 c.setMinBytes && c.setMinBytes(0)
 
-let syncSuccess = false
-
-// Check for time sync with server
-async function getServerTime() {
-	let serverTime = await fetch(destination + "/sync").then((res) => res.json())
-	let localTime = Date.now()
-	if (localTime < serverTime + 1500 && localTime > serverTime - 1500) {
-		syncSuccess = true
-		console.log("Time sync successful")
-	} else {
-		console.log("Time sync failed")
-		console.log("Time difference is %s miliseconds", Math.abs(localTime - serverTime))
-		console.log("Exiting...")
-		process.exit(1)
-	}
-}
-getServerTime()
-
 // Every time a packet is received, this function is called
 // Continue if sync is successful
 c.on("packet", function (nbytes, trunc) {
-	if (linkType === "ETHERNET" && syncSuccess == true) {
+	if (linkType === "ETHERNET") {
 		var ret = decoders.Ethernet(buffer)
 
 		if (ret.info.type === PROTOCOL.ETHERNET.IPV4) {
@@ -80,7 +62,6 @@ c.on("packet", function (nbytes, trunc) {
 					// Show log if verbose
 					if (verbose == true) {
 						console.log(msgQueue)
-						console.log(JSON.stringify(msgQueue))
 					}
 				}
 			} else if (ret.info.protocol === PROTOCOL.IP.UDP) {
