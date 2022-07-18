@@ -22,6 +22,7 @@ c.on("packet", function (nbytes, trunc) {
 
 		if (ret.info.type === PROTOCOL.ETHERNET.IPV4) {
 			ret = decoders.IPV4(buffer, ret.offset)
+			let ipAddr = ret.info.srcaddr
 
 			if (ret.info.protocol === PROTOCOL.IP.TCP) {
 				var datalen = ret.info.totallen - ret.hdrlen
@@ -38,12 +39,14 @@ c.on("packet", function (nbytes, trunc) {
 					let bugleData = bugleClean.substring(bugleClean.indexOf(" : ") + 3)
 					if (bugleData != "NaN" && bugleData != "undefined" && bugleData != NaN && bugleData != undefined) {
 						msgQueue.time = Date.now()
+						msgQueue.src = ipAddr
 						msgQueue.data = { name: bugleNick, msg: bugleData }
 					}
 				} else if (rcvStr.includes("[채널12]")) {
 					let fieldRaid = rcvStr.substring(rcvStr.indexOf("[채널12]")).slice(7, -11)
 					if (fieldRaid != "NaN" && fieldRaid != "undefined" && fieldRaid != NaN && fieldRaid != undefined) {
 						msgQueue.time = Date.now()
+						msgQueue.src = ipAddr
 						msgQueue.message = fieldRaid
 					}
 				}
