@@ -4,12 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pkg -t node16-win-x64 index.js"
   },
   "author": "Shane Lx",
   "license": "MIT",
   "dependencies": {
     "cap": "^0.2.1",
     "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.0"
   }
 }

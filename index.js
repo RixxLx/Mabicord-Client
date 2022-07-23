@@ -1,11 +1,24 @@
+const os = require("os")
+const fs = require("fs")
 const fetch = require("node-fetch")
-const { cap_filter, device_address, destination, verbose } = require("./config.json")
+const { cap_filter, destination, verbose } = JSON.parse(fs.readFileSync("./config.json"))
 var Cap = require("cap").Cap
+
+// Find device_address
+let device_address = ""
+let interfaces = os.networkInterfaces()
+for (var k in interfaces) {
+	for (var k2 in interfaces[k]) {
+		var address = interfaces[k][k2]
+		if (address.family === "IPv4" && !address.internal) {
+			device_address = address.address
+		}
+	}
+}
 
 // cap components
 var decoders = require("cap").decoders
 var PROTOCOL = decoders.PROTOCOL
-var fs = require("fs")
 var c = new Cap()
 var device = Cap.findDevice(device_address)
 var filter = cap_filter
@@ -22,7 +35,7 @@ c.on("packet", function (nbytes, trunc) {
 
 		if (ret.info.type === PROTOCOL.ETHERNET.IPV4) {
 			ret = decoders.IPV4(buffer, ret.offset)
-			let ipAddr = ret.info.srcaddr
+			let srcAddr = ret.info.srcaddr
 
 			if (ret.info.protocol === PROTOCOL.IP.TCP) {
 				var datalen = ret.info.totallen - ret.hdrlen
@@ -38,15 +51,17 @@ c.on("packet", function (nbytes, trunc) {
 					let bugleNick = bugleClean.substring(0, bugleClean.indexOf(" : "))
 					let bugleData = bugleClean.substring(bugleClean.indexOf(" : ") + 3)
 					if (bugleData != "NaN" && bugleData != "undefined" && bugleData != NaN && bugleData != undefined) {
+						msgQueue.type = "bugle"
 						msgQueue.time = Date.now()
-						msgQueue.src = ipAddr
+						msgQueue.src = srcAddr
 						msgQueue.data = { name: bugleNick, msg: bugleData }
 					}
 				} else if (rcvStr.includes("[채널12]")) {
 					let fieldRaid = rcvStr.substring(rcvStr.indexOf("[채널12]")).slice(7, -11)
 					if (fieldRaid != "NaN" && fieldRaid != "undefined" && fieldRaid != NaN && fieldRaid != undefined) {
+						msgQueue.type = "raid"
 						msgQueue.time = Date.now()
-						msgQueue.src = ipAddr
+						msgQueue.src = srcAddr
 						msgQueue.message = fieldRaid
 					}
 				}
@@ -74,4 +89,11 @@ c.on("packet", function (nbytes, trunc) {
 	}
 })
 
-console.log("Successfully started Mabicord.\nListening to %s on %s...", cap_filter, device_address)
+console.log("Starting Mabicord.")
+console.log("%s 어댑터로 %s 캡처하는 중...", device_address, cap_filter)
+console.log("서버: %s\n", destination)
+console.log("서버로 보내는 데이터:")
+console.log("메시지에 <ALL_CHANNELS> 혹은 [채널12]가 포함될 경우:")
+console.log("    발신자 IP, 메시지 채널 IP, 메시지 내용, 현재 시각\n")
+console.log("서버로 발신된 데이터는 디스코드로 송신된 뒤 폐기됩니다.")
+console.log("기타 문의는 Lx#2909으로 해주세요.")
