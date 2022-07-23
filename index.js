@@ -1,17 +1,19 @@
 const os = require("os")
 const fs = require("fs")
 const fetch = require("node-fetch")
-const { cap_filter, destination, verbose } = JSON.parse(fs.readFileSync("./config.json"))
+const { cap_filter, device_address, destination, verbose } = JSON.parse(fs.readFileSync("./config.json"))
 var Cap = require("cap").Cap
 
 // Find device_address
-let device_address = ""
-let interfaces = os.networkInterfaces()
-for (var k in interfaces) {
-	for (var k2 in interfaces[k]) {
-		var address = interfaces[k][k2]
-		if (address.family === "IPv4" && !address.internal) {
-			device_address = address.address
+let deviceAddr = ""
+if (device_address == "" || device_address == undefined) {
+	let interfaces = os.networkInterfaces()
+	for (var k in interfaces) {
+		for (var k2 in interfaces[k]) {
+			var address = interfaces[k][k2]
+			if (address.family === "IPv4" && !address.internal) {
+				deviceAddr = address.address
+			}
 		}
 	}
 }
@@ -20,7 +22,7 @@ for (var k in interfaces) {
 var decoders = require("cap").decoders
 var PROTOCOL = decoders.PROTOCOL
 var c = new Cap()
-var device = Cap.findDevice(device_address)
+var device = Cap.findDevice(deviceAddr)
 var filter = cap_filter
 var bufSize = 10 * 1024 * 1024
 var buffer = Buffer.alloc(65535)
