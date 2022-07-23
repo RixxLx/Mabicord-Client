@@ -1,4 +1,5 @@
 # Custom
+*.exe
 config.json
 .archive/
 .vscode/
