@@ -22,7 +22,7 @@ if (device_address == "" || device_address == undefined) {
 var decoders = require("cap").decoders
 var PROTOCOL = decoders.PROTOCOL
 var c = new Cap()
-var device = Cap.findDevice(deviceAddr)
+var device = Cap.findDevice(device_address || deviceAddr)
 var filter = cap_filter
 var bufSize = 10 * 1024 * 1024
 var buffer = Buffer.alloc(65535)
